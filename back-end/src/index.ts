@@ -1,6 +1,6 @@
 import "dotenv/config";
 import express, { Request, Response, NextFunction } from "express";
-import newsRouter from "./routes/news.routes.js";
+import storeRouter from "./routes/store.routes.js";
 import "./db/database.js";
 
 const app = express();
@@ -14,7 +14,7 @@ app.get("/", (_req: Request, res: Response) => {
 });
 
 // Routes
-app.use("/news", newsRouter);
+app.use("/stores", storeRouter);
 
 // Central error handler
 app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
