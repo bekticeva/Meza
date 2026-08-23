@@ -1,4 +1,4 @@
-import mysql from "mysql2/promise";
+import mysql, { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
@@ -37,6 +37,8 @@ export interface Product extends RowDataPacket {
   is_available: number;
 }
 
+// getters ====================================================================================
+
 export const allStores = async (): Promise<Store[]> => {
   const [rows] = await pool.query<Store[]>("SELECT * FROM store");
   return rows;
@@ -53,10 +55,35 @@ export const productsByStore = async (id: string) : Promise<Product[]> => {
 }
 
 export const oneProduct = async (id: string) : Promise<Product[]> => {
-  const [rows] = await pool.query<Products[]>("SELECT * FROM product WHERE id = ? ",[id]);
+  const [rows] = await pool.query<Product[]>("SELECT * FROM product WHERE id = ? ",[id]);
   return rows;
 }
 
+// getters ====================================================================================
 
+export const createProduct = async (
+  storeId: number,
+  categoryId: number,
+  collectionId: number | null,
+  name: string,
+  description: string | null,
+  price: number,
+  imageUrl: string | null,
+  isAvailable: number
+) : Promise<ResultSetHeader> => {
+  const [rows] = await pool.query<ResultSetHeader>( "INSERT INTO product (store_id, category_id, collection_id, name, description, price, image_url, is_available) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    [
+      storeId,
+      categoryId,
+      collectionId,
+      name,
+      description,
+      price,
+      imageUrl,
+      isAvailable
+    ]
+  );
+  return rows;
+}
 
 export default pool;
