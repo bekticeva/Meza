@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction, Router } from "express";
-import { allStores, oneStore, productsByStore, oneProduct, createProduct } from "../db/database.js"
+import { allStores, oneStore, productsByStore, oneProduct, createProduct, updateProduct, deleteProduct } from "../db/database.js"
 const router = Router();
 
 
@@ -59,6 +59,8 @@ const getOneProduct = async (
 
 // setters ====================================================================================
 
+
+//add=====================
 const addProduct = async (
   req: Request,
   res: Response,
@@ -117,11 +119,101 @@ const addProduct = async (
   }
 }
 
+//edit=====================
+const editProduct = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const productId = Number(req.params.id);
+    
+    const {
+      store_id,
+      category_id,
+      collection_id,
+      name,
+      description,
+      price,
+      image_url,
+      is_available
+    } = req.body as {
+      store_id?: number;
+      category_id?: number;
+      collection_id?: number | null;
+      name?: string;
+      description?: string | null;
+      price?: number;
+      image_url?: string | null;
+      is_available?: number;
+    };
+
+    if (!store_id || !category_id || !name || !price) {
+    res.status(400).json({
+      success: false,
+      message: "missing fields.",
+    });
+      return;
+    }
+
+    const queryResult = await updateProduct(
+      productId,store_id,category_id,collection_id,name,description,price,image_url,is_available
+    );
+
+    if (queryResult.affectedRows === 1) {
+    res.status(200).json({
+      success: true,
+      message: "Product added."
+    });
+
+    return;
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "News item was not added.",
+    });
+
+  } catch (error) {
+    next(error)
+  }
+}
+
+//delete=====================
+const removeProduct = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const productId = Number(req.params.id);
+
+    const queryResult = await deleteProduct(productId);
+
+    if(queryResult.affectedRows === 1) {
+      res.status(200).json({success:true, message: "Product deleted"});
+      return;
+    }
+
+    res.status(404).json({success: false, message: "Product not found"})
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+
 router.get("/", getAllStores);
 router.get("/:id", getOneStore);
 router.get("/:id/:products", getStoreProducts);
 router.get("/products/:id", getOneProduct);
 
 router.post("/product", addProduct);
+
+router.put("/product/:id", editProduct);
+
+router.delete("/product/:id", removeProduct);
 
 export default router;

@@ -59,7 +59,7 @@ export const oneProduct = async (id: string) : Promise<Product[]> => {
   return rows;
 }
 
-// getters ====================================================================================
+// setters ====================================================================================
 
 export const createProduct = async (
   storeId: number,
@@ -84,6 +84,38 @@ export const createProduct = async (
     ]
   );
   return rows;
+}
+
+export const updateProduct = async (
+  id: number,
+  storeId: number,
+  categoryId: number,
+  collectionId: number | null,
+  name: string,
+  description: string | null,
+  price: number,
+  imageUrl: string | null,
+  isAvailable: number
+) : Promise<ResultSetHeader> => {
+  const [rows] = await pool.query<ResultSetHeader>( "UPDATE product SET store_id = ?, category_id = ?, collection_id = ?, name = ?, description = ?, price = ?, image_url = ?, is_available = ? WHERE id = ?",
+    [
+      storeId,
+      categoryId,
+      collectionId,
+      name,
+      description,
+      price,
+      imageUrl,
+      isAvailable,
+      id
+    ]
+  );
+  return rows;
+}
+
+export const deleteProduct = async (id: number) : Promise<ResultSetHeader> => {
+  const[result] = await pool.query<ResultSetHeader>("DELETE FROM product WHERE id = ?", [id]);
+  return result;
 }
 
 export default pool;
