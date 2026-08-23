@@ -25,9 +25,38 @@ export interface Store extends RowDataPacket {
   accepts_delivery: number;
 }
 
+export interface Product extends RowDataPacket {
+  id: number;
+  store_id: number;
+  category_id: number;
+  collection_id: number | null;
+  name: string;
+  description: string | null;
+  price: number;
+  image_url: string | null;
+  is_available: number;
+}
+
 export const allStores = async (): Promise<Store[]> => {
   const [rows] = await pool.query<Store[]>("SELECT * FROM store");
   return rows;
 };
+
+export const oneStore = async (id: string) : Promise<Store[]> => {
+  const [rows] = await pool.query<Store[]>("SELECT * FROM store WHERE id = ?",[id]);
+  return rows;
+}
+
+export const productsByStore = async (id: string) : Promise<Product[]> => {
+  const [rows] = await pool.query<Products[]>("SELECT * FROM product WHERE store_id = ?",[id]);
+  return rows;
+}
+
+export const oneProduct = async (id: string) : Promise<Product[]> => {
+  const [rows] = await pool.query<Products[]>("SELECT * FROM product WHERE id = ? ",[id]);
+  return rows;
+}
+
+
 
 export default pool;

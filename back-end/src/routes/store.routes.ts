@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction, Router } from "express";
-import { allStores } from "../db/database.js"
+import { allStores, oneStore, productsByStore, oneProduct } from "../db/database.js"
 const router = Router();
 
 const getAllStores = async (
@@ -15,6 +15,49 @@ const getAllStores = async (
   }
 };
 
+const getOneStore = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try{
+    const store = await oneStore(req.params.id);
+    res.json(store);
+  } catch(error){
+    next(error)
+  }
+}
+
+const getStoreProducts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try{
+    const products = await productsByStore(req.params.id);
+    res.json(products);
+  } catch(error){
+    next(error)
+  }
+};
+
+const getOneProduct = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try{
+    const products = await oneProduct(req.params.id);
+    res.json(products);
+  } catch(error){
+    next(error)
+  }
+};
+
+
 router.get("/", getAllStores);
+router.get("/:id", getOneStore);
+router.get("/:id/:products", getStoreProducts);
+router.get("/products/:id", getOneProduct);
 
 export default router;
