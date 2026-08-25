@@ -1,4 +1,5 @@
 import mysql, { ResultSetHeader, RowDataPacket } from "mysql2/promise";
+import bcrypt from "bcrypt";
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
@@ -37,6 +38,17 @@ export interface Product extends RowDataPacket {
   is_available: number;
 }
 
+export interface User extends RowDataPacket {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  password: string;
+  phone_number: string | null;
+  profile_picture: string | null;
+  created_at: Date;
+}
+
 // getters ====================================================================================
 
 export const allStores = async (): Promise<Store[]> => {
@@ -60,7 +72,7 @@ export const oneProduct = async (id: string) : Promise<Product[]> => {
 }
 
 // setters ====================================================================================
-
+//products========
 export const createProduct = async (
   storeId: number,
   categoryId: number,
@@ -117,5 +129,36 @@ export const deleteProduct = async (id: number) : Promise<ResultSetHeader> => {
   const[result] = await pool.query<ResultSetHeader>("DELETE FROM product WHERE id = ?", [id]);
   return result;
 }
+//products========
+
+//users========
+
+export const createUser = async (
+  firstName: string,
+  lastName: string,
+  email: string,
+  password: string
+): Promise<ResultSetHeader> => {
+
+  const hashedPass = await bcrypt.hash(password,10);
+
+  const [result] = await pool.query<ResultSetHeader>(
+    "INSERT INTO user (first_name, last_name, email, password) VALUES (?, ?, ?, ?)",
+    [firstName, lastName, email, hashedPass]
+  );
+  return result;
+};
+
+
+export const authUser = async (email: string): Promise<User[]> => {
+  const [rows] = await pool.query<User[]>(
+    "SELECT * FROM user WHERE email = ?",
+    [email]
+  );
+
+  return rows;
+};
+
+//users========
 
 export default pool;

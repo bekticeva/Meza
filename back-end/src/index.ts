@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express, { Request, Response, NextFunction } from "express";
 import storeRouter from "./routes/store.routes.js";
+import userRouter from "./routes/users.routes.js";
 import "./db/database.js";
 
 const app = express();
@@ -15,6 +16,7 @@ app.get("/", (_req: Request, res: Response) => {
 
 // Routes
 app.use("/stores", storeRouter);
+app.use("/users", userRouter);
 
 // Central error handler
 app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
