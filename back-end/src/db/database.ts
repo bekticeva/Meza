@@ -49,6 +49,38 @@ export interface User extends RowDataPacket {
   created_at: Date;
 }
 
+export interface Order extends RowDataPacket {
+  id: number;
+  user_id: number | null;
+  ordered_at: Date;
+  status: string;
+  delivery_method: string;
+  delivery_address: string | null;
+  total_price: number;
+  additional_information: string | null;
+  guest_name: string | null;
+  guest_email: string | null;
+  guest_phone: string | null;
+}
+
+export interface OrderItem extends RowDataPacket {
+  id: number;
+  order_id: number;
+  product_id: number;
+  availability_id: number;
+  quantity: number;
+  order_price: number;
+  special_instructions: string | null;
+}
+
+export interface Availability extends RowDataPacket {
+  id: number;
+  product_id: number;
+  available_date: Date;
+  pickup_time: string;
+  available_quantity: number;
+}
+
 // getters ====================================================================================
 
 export const allStores = async (): Promise<Store[]> => {
@@ -171,5 +203,64 @@ export const authUserById = async (
 };
 
 //users========
+
+//orders========
+export const createOrder = async (
+  userId: number | null,
+  deliveryMethod: string,
+  deliveryAddress: string | null,
+  totalPrice: number,
+  additionalInformation: string | null,
+  guestName: string | null,
+  guestEmail: string | null,
+  guestPhone: string | null
+): Promise<ResultSetHeader> => {
+  const [result] = await pool.query<ResultSetHeader>(
+    `INSERT INTO \`order\`
+    (user_id, delivery_method, delivery_address, total_price,
+     additional_information, guest_name, guest_email, guest_phone)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      userId,
+      deliveryMethod,
+      deliveryAddress,
+      totalPrice,
+      additionalInformation,
+      guestName,
+      guestEmail,
+      guestPhone
+    ]
+  );
+
+  return result;
+};
+
+
+export const addOrderItem = async (
+  orderId: number,
+  productId: number,
+  availabilityId: number,
+  quantity: number,
+  orderPrice: number,
+  specialInstructions: string | null
+): Promise<ResultSetHeader> => {
+  const [result] = await pool.query<ResultSetHeader>(
+    `INSERT INTO order_item
+    (order_id, product_id, availability_id, quantity, order_price, special_instructions)
+    VALUES (?, ?, ?, ?, ?, ?)`,
+    [
+      orderId,
+      productId,
+      availabilityId,
+      quantity,
+      orderPrice,
+      specialInstructions
+    ]
+  );
+
+  return result;
+};
+//orders========
+
 
 export default pool;

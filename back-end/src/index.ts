@@ -3,6 +3,7 @@ import express, { Request, Response, NextFunction } from "express";
 import session from "express-session";
 import storeRouter from "./routes/store.routes.js";
 import userRouter from "./routes/users.routes.js";
+import ordersRouter from "./routes/orders.routes.js";
 import "./db/database.js";
 
 const app = express();
@@ -32,6 +33,7 @@ app.use(
 // Routes
 app.use("/stores", storeRouter);
 app.use("/users", userRouter);
+app.use("/orders", ordersRouter);
 
 // Central error handler
 app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
