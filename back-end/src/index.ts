@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express, { Request, Response, NextFunction } from "express";
+import session from "express-session";
 import storeRouter from "./routes/store.routes.js";
 import userRouter from "./routes/users.routes.js";
 import "./db/database.js";
@@ -13,6 +14,20 @@ app.use(express.urlencoded({ extended: false }));
 app.get("/", (_req: Request, res: Response) => {
   res.send("Hello from Express 5 and TypeScript");
 });
+
+//session
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "meza-secret",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: false,
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24
+    }
+  })
+);
 
 // Routes
 app.use("/stores", storeRouter);

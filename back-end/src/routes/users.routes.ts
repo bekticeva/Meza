@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction, Router } from "express";
-import { authUser, createUser } from "../db/database.js";
+import { authUser, createUser, authUserById } from "../db/database.js";
 import bcrypt from "bcrypt";
 
 const router = Router();
@@ -51,6 +51,8 @@ const loginUser = async (
       return;
     }
 
+    req.session.userId = user.id;
+
     res.status(200).json({
       success: true,
       message: "Login successful.",
@@ -63,6 +65,49 @@ const loginUser = async (
     next(error);
   }
 };
+
+const getCurrentUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.session.userId) {
+      res.status(401).json({
+        success: false,
+        message: "Not logged in."
+      });
+
+      return;
+    }
+
+    const queryResult = await authUserById(req.session.userId);
+
+    if (queryResult.length === 0) {
+      res.status(404).json({
+        success: false,
+        message: "User not found."
+      });
+
+      return;
+    }
+
+    const user = queryResult[0];
+
+    res.json({
+      success: true,
+      user: {
+        id: user.id,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 const registerUser = async (
   req: Request,
@@ -108,5 +153,6 @@ const registerUser = async (
 
 router.post("/login", loginUser);
 router.post("/register", registerUser);
+router.get("/me", getCurrentUser);
 
 export default router;

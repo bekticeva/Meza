@@ -159,6 +159,17 @@ export const authUser = async (email: string): Promise<User[]> => {
   return rows;
 };
 
+export const authUserById = async (
+  id: number
+): Promise<User[]> => {
+  const [rows] = await pool.query<User[]>(
+    "SELECT * FROM user WHERE id = ?",
+    [id]
+  );
+
+  return rows;
+};
+
 //users========
 
 export default pool;
