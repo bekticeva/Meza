@@ -245,7 +245,7 @@ export const addOrderItem = async (
   specialInstructions: string | null
 ): Promise<ResultSetHeader> => {
   const [result] = await pool.query<ResultSetHeader>(
-    `INSERT INTO order_item
+    `INSERT INTO order_product
     (order_id, product_id, availability_id, quantity, order_price, special_instructions)
     VALUES (?, ?, ?, ?, ?, ?)`,
     [
@@ -260,6 +260,14 @@ export const addOrderItem = async (
 
   return result;
 };
+
+
+export const getAvailability = async (
+  id: number 
+) : Promise <Availability[]> => {
+  const[rows] = await pool.query<Availability[]> ("SELECT * FROM availability WHERE id = ?",[id]);
+  return rows;
+}
 //orders========
 
 
