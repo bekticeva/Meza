@@ -240,7 +240,25 @@ export const createOrder = async (
   return result;
 };
 
+export const allOrders = async (
+  connection: PoolConnection,
+) : Promise<Order[]> => {
+  const[rows] = await connection.query<Order[]>("SELECT * FROM `order` ORDER BY ordered_at DESC");
+  return rows;
+}
 
+export const updateOrderStatus = async (
+  connection: PoolConnection,
+  orderId: number,
+  status: string
+) : Promise<ResultSetHeader> => {
+  const[result] = await connection.query<ResultSetHeader>("UPDATE `order` SET status = ? WHERE id = ?", [status, orderId]);
+  return result;
+}
+//orders========
+
+
+//order_product=======
 export const addOrderItem = async (
   connection: PoolConnection,
   orderId: number,
@@ -266,8 +284,10 @@ export const addOrderItem = async (
 
   return result;
 };
+//order_product=======
 
 
+//availability=======
 export const getAvailability = async (
   connection: PoolConnection,
   id: number,
@@ -285,7 +305,7 @@ export const reduceAvailability = async (
   const[rows] = await connection.query<ResultSetHeader> ("UPDATE availability SET available_quantity = available_quantity - ? WHERE id = ?",[quantity, id]
   )
 }
-//orders========
+//availability=======
 
 
 

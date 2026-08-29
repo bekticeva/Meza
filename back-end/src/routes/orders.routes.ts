@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction, Router } from "express";
-import { createOrder, addOrderItem, getAvailability, reduceAvailability , getConnection } from "../db/database.js";
+import { createOrder, allOrders, updateOrderStatus, addOrderItem, getAvailability, reduceAvailability , getConnection } from "../db/database.js";
 
 const router = Router();
 
@@ -127,7 +127,53 @@ const createOrderRoute = async(
   connection.release();
 }};
 
+const getOrdersRoute = async(
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    const connection = await getConnection();
+
+    try {
+        const orders = await allOrders(connection);
+        res.status(200).json(orders);
+    } catch (error) {
+        next(error);
+    } finally {
+        connection.release();
+    }
+}
+
+const updateOrderStatusRoute = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    const connection = await getConnection();
+
+    try {
+        const orderId = Number(req.params.id);
+        const {status} = req.body as {
+            status: string;
+        };
+        const result = await updateOrderStatus(
+            connection, orderId, status
+        )
+
+        res.status(200).json({
+            success: true,
+            message: "Order status updated."
+        });
+
+    } catch (error) {
+        next(error);
+    } finally {
+        connection.release();
+    }
+}
 
 router.post("/", createOrderRoute);
+router.get("/", getOrdersRoute);
+router.put("/:id/status", updateOrderStatusRoute);
 
 export default router;
