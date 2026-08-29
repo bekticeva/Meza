@@ -270,10 +270,20 @@ export const addOrderItem = async (
 
 export const getAvailability = async (
   connection: PoolConnection,
-  id: number 
+  id: number,
+  productId: number
 ) : Promise <Availability[]> => {
-  const[rows] = await connection.query<Availability[]> ("SELECT * FROM availability WHERE id = ?",[id]);
+  const[rows] = await connection.query<Availability[]> ("SELECT * FROM availability WHERE id = ? AND product_id = ?",[id, productId]);
   return rows;
+}
+
+export const reduceAvailability = async (
+  connection: PoolConnection,
+  id: number,
+  quantity: number
+) : Promise <ResultSetHeader> => {
+  const[rows] = await connection.query<ResultSetHeader> ("UPDATE availability SET available_quantity = available_quantity - ? WHERE id = ?",[quantity, id]
+  )
 }
 //orders========
 

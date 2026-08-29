@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction, Router } from "express";
-import { createOrder, addOrderItem, getAvailability, getConnection } from "../db/database.js";
+import { createOrder, addOrderItem, getAvailability, reduceAvailability , getConnection } from "../db/database.js";
 
 const router = Router();
 
@@ -80,7 +80,7 @@ const createOrderRoute = async(
     console.log("Order created", queryResult);
 
     for(const item of items){
-        const availabilityResult = await getAvailability(connection, item.availability_id);
+        const availabilityResult = await getAvailability(connection, item.availability_id, item.product_id);
         const availability = availabilityResult[0];
 
         if(item.quantity > availability.available_quantity){
@@ -95,6 +95,12 @@ const createOrderRoute = async(
             item.quantity,
             item.order_price,
             item.special_instructions)
+
+        await reduceAvailability(
+            connection,
+            item.quantity,
+            item.availability_id
+        )
     }
 
     await connection.commit();
