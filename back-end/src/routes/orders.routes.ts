@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction, Router } from "express";
-import { createOrder, addOrderItem, getAvailability } from "../db/database.js";
+import { createOrder, addOrderItem, getAvailability, getConnection } from "../db/database.js";
 
 const router = Router();
 
@@ -7,7 +7,13 @@ const createOrderRoute = async(
     req: Request,
     res: Response,
     next: NextFunction
-) => {try {
+) => {
+    const connection = await getConnection();
+
+    try {
+
+    await connection.beginTransaction();
+
     const {
         user_id,
         delivery_method,
@@ -48,7 +54,8 @@ const createOrderRoute = async(
                 success: false,
                 message: "At least one product is required."
             }
-        )
+        );
+        return;
     }
     
     console.log("About to create order");
@@ -59,6 +66,7 @@ const createOrderRoute = async(
     }
 
     const queryResult = await createOrder(
+        connection,
         user_id ?? null,
         delivery_method,
         delivery_address ?? null,
@@ -72,19 +80,15 @@ const createOrderRoute = async(
     console.log("Order created", queryResult);
 
     for(const item of items){
-        const availabilityResult = await getAvailability(item.availability_id);
+        const availabilityResult = await getAvailability(connection, item.availability_id);
         const availability = availabilityResult[0];
 
-        if (item.quantity > availability.available_quantity) {
-            res.status(400).json({
-                success: false,
-                message: "Not enough product available."
-            });
-
-            return;
-            }
+        if(item.quantity > availability.available_quantity){
+            throw new Error("Not enough product available")
+        };
 
         await addOrderItem(
+            connection,
             queryResult.insertId,
             item.product_id,
             item.availability_id,
@@ -92,6 +96,8 @@ const createOrderRoute = async(
             item.order_price,
             item.special_instructions)
     }
+
+    await connection.commit();
 
     if (queryResult.affectedRows === 1) {
         res.status(201).json({
@@ -109,7 +115,10 @@ const createOrderRoute = async(
         });
     
 } catch (error) {
+    await connection.rollback();
     next(error)
+}finally {
+  connection.release();
 }};
 
 

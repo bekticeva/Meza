@@ -1,4 +1,4 @@
-import mysql, { ResultSetHeader, RowDataPacket } from "mysql2/promise";
+import mysql, { ResultSetHeader, RowDataPacket, PoolConnection } from "mysql2/promise";
 import bcrypt from "bcrypt";
 
 const pool = mysql.createPool({
@@ -10,6 +10,10 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0,
 });
+
+export const getConnection = async () => {
+  return await pool.getConnection();
+}
 
 export interface Store extends RowDataPacket {
   id: number;
@@ -206,6 +210,7 @@ export const authUserById = async (
 
 //orders========
 export const createOrder = async (
+  connection: PoolConnection,
   userId: number | null,
   deliveryMethod: string,
   deliveryAddress: string | null,
@@ -215,7 +220,7 @@ export const createOrder = async (
   guestEmail: string | null,
   guestPhone: string | null
 ): Promise<ResultSetHeader> => {
-  const [result] = await pool.query<ResultSetHeader>(
+  const [result] = await connection.query<ResultSetHeader>(
     `INSERT INTO \`order\`
     (user_id, delivery_method, delivery_address, total_price,
      additional_information, guest_name, guest_email, guest_phone)
@@ -237,6 +242,7 @@ export const createOrder = async (
 
 
 export const addOrderItem = async (
+  connection: PoolConnection,
   orderId: number,
   productId: number,
   availabilityId: number,
@@ -244,7 +250,7 @@ export const addOrderItem = async (
   orderPrice: number,
   specialInstructions: string | null
 ): Promise<ResultSetHeader> => {
-  const [result] = await pool.query<ResultSetHeader>(
+  const [result] = await connection.query<ResultSetHeader>(
     `INSERT INTO order_product
     (order_id, product_id, availability_id, quantity, order_price, special_instructions)
     VALUES (?, ?, ?, ?, ?, ?)`,
@@ -263,12 +269,14 @@ export const addOrderItem = async (
 
 
 export const getAvailability = async (
+  connection: PoolConnection,
   id: number 
 ) : Promise <Availability[]> => {
-  const[rows] = await pool.query<Availability[]> ("SELECT * FROM availability WHERE id = ?",[id]);
+  const[rows] = await connection.query<Availability[]> ("SELECT * FROM availability WHERE id = ?",[id]);
   return rows;
 }
 //orders========
+
 
 
 export default pool;
