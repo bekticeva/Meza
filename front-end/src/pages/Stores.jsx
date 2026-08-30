@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import Store from "../components/Store.jsx";
+import StoreCard from "../components/StoreCard.jsx";
 
 const API_URL = "http://88.200.63.148:5000";
 
@@ -25,7 +25,7 @@ export default function Stores(){
   }, []);
 
     return (
-        <div>{stores.map((store) => (<Store key = {store.id} store = {store}/>))}</div>
+        <div>{stores.map((store) => (<StoreCard key = {store.id} store = {store}/>))}</div>
 
         
     )

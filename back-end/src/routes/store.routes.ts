@@ -1,5 +1,12 @@
 import { Request, Response, NextFunction, Router } from "express";
-import { allStores, oneStore, productsByStore, oneProduct, createProduct, updateProduct, deleteProduct } from "../db/database.js"
+import {  allStores, 
+          oneStore, 
+          productsByStore, 
+          oneProduct, 
+          createProduct, 
+          updateProduct, 
+          deleteProduct,
+          availabilityByProduct } from "../db/database.js"
 const router = Router();
 
 
@@ -57,8 +64,22 @@ const getOneProduct = async (
   }
 };
 
-// setters ====================================================================================
+const getProductAvailability = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try{
+    const availability = await availabilityByProduct(req.params.id);
+    res.json(availability);
+  } catch(error){
+    next(error)
+  }
+};
 
+
+
+// setters ====================================================================================
 
 //add=====================
 const addProduct = async (
@@ -206,9 +227,11 @@ const removeProduct = async (
 
 
 router.get("/", getAllStores);
+router.get("/products/:id/availability", getProductAvailability);
+router.get("/products/:id", getOneProduct);
 router.get("/:id", getOneStore);
 router.get("/:id/:products", getStoreProducts);
-router.get("/products/:id", getOneProduct);
+
 
 router.post("/product", addProduct);
 

@@ -40,6 +40,7 @@ export interface Product extends RowDataPacket {
   price: number;
   image_url: string | null;
   is_available: number;
+  capacity_required: number;
 }
 
 export interface User extends RowDataPacket {
@@ -79,10 +80,10 @@ export interface OrderItem extends RowDataPacket {
 
 export interface Availability extends RowDataPacket {
   id: number;
-  product_id: number;
+  store_id: number;
   available_date: Date;
-  pickup_time: string;
-  available_quantity: number;
+  total_capacity: number;
+  remaining_capacity: number;
 }
 
 // getters ====================================================================================
@@ -160,6 +161,18 @@ export const updateProduct = async (
   );
   return rows;
 }
+
+export const getProduct = async (
+  connection: PoolConnection,
+  id: number
+): Promise<Product[]> => {
+  const [rows] = await connection.query<Product[]>(
+    "SELECT * FROM product WHERE id = ?",
+    [id]
+  );
+
+  return rows;
+};
 
 export const deleteProduct = async (id: number) : Promise<ResultSetHeader> => {
   const[result] = await pool.query<ResultSetHeader>("DELETE FROM product WHERE id = ?", [id]);
@@ -291,19 +304,29 @@ export const addOrderItem = async (
 export const getAvailability = async (
   connection: PoolConnection,
   id: number,
-  productId: number
 ) : Promise <Availability[]> => {
-  const[rows] = await connection.query<Availability[]> ("SELECT * FROM availability WHERE id = ? AND product_id = ?",[id, productId]);
+  const[rows] = await connection.query<Availability[]> ("SELECT * FROM availability WHERE id = ?",[id]);
   return rows;
 }
 
 export const reduceAvailability = async (
   connection: PoolConnection,
   id: number,
-  quantity: number
-) : Promise <ResultSetHeader> => {
-  const[rows] = await connection.query<ResultSetHeader> ("UPDATE availability SET available_quantity = available_quantity - ? WHERE id = ?",[quantity, id]
-  )
+  capacity: number
+): Promise<ResultSetHeader> => {
+  const [result] = await connection.query<ResultSetHeader>(
+    "UPDATE availability SET remaining_capacity = remaining_capacity - ? WHERE id = ?",
+    [capacity, id]
+  );
+
+  return result;
+};
+
+export const availabilityByProduct = async (
+  id: number
+) : Promise <Availability[]> => {
+  const [rows] = await pool.query<Availability[]>("SELECT * FROM availability WHERE product_id = ?", [id]);
+  return rows;
 }
 //availability=======
 

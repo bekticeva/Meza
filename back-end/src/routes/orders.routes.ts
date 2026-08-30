@@ -1,5 +1,14 @@
 import { Request, Response, NextFunction, Router } from "express";
-import { createOrder, allOrders, updateOrderStatus, addOrderItem, getAvailability, reduceAvailability , getConnection } from "../db/database.js";
+import {
+    createOrder,
+    allOrders,
+    updateOrderStatus,
+    addOrderItem,
+    getAvailability,
+    getProduct,
+    reduceAvailability,
+    getConnection
+} from "../db/database.js";
 
 const router = Router();
 
@@ -79,30 +88,52 @@ const createOrderRoute = async(
     
     console.log("Order created", queryResult);
 
-    for(const item of items){
-        const availabilityResult = await getAvailability(connection, item.availability_id, item.product_id);
-        const availability = availabilityResult[0];
+    for (const item of items) {
+    const availabilityResult = await getAvailability(
+        connection,
+        item.availability_id
+    );
 
-        if(item.quantity > availability.available_quantity){
-            throw new Error("Not enough product available")
-        };
+    const availability = availabilityResult[0];
 
-        await addOrderItem(
-            connection,
-            queryResult.insertId,
-            item.product_id,
-            item.availability_id,
-            item.quantity,
-            item.order_price,
-            item.special_instructions)
-
-        await reduceAvailability(
-            connection,
-            item.quantity,
-            item.availability_id
-        )
+    if (!availability) {
+        throw new Error("Availability not found");
     }
 
+    const productResult = await getProduct(
+        connection,
+        item.product_id
+    );
+
+    const product = productResult[0];
+
+    if (!product) {
+        throw new Error("Product not found");
+    }
+
+    const requiredCapacity =
+        item.quantity * product.capacity_required;
+
+    if (requiredCapacity > availability.remaining_capacity) {
+        throw new Error("Not enough capacity available");
+    }
+
+    await addOrderItem(
+        connection,
+        queryResult.insertId,
+        item.product_id,
+        item.availability_id,
+        item.quantity,
+        item.order_price,
+        item.special_instructions
+    );
+
+    await reduceAvailability(
+        connection,
+        item.availability_id,
+        requiredCapacity
+    );
+}
     await connection.commit();
 
     if (queryResult.affectedRows === 1) {

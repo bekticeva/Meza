@@ -4,7 +4,6 @@ export default function Menu() {
   return (
     <nav>
       <Link to="/stores">Stores</Link>
-      <Link to="/about">About</Link>
       <Link to="/login">Login</Link>
     </nav>
   );
