@@ -99,7 +99,7 @@ export const oneStore = async (id: string) : Promise<Store[]> => {
 }
 
 export const productsByStore = async (id: string) : Promise<Product[]> => {
-  const [rows] = await pool.query<Products[]>("SELECT * FROM product WHERE store_id = ?",[id]);
+  const [rows] = await pool.query<Product[]>("SELECT * FROM product WHERE store_id = ?",[id]);
   return rows;
 }
 
@@ -322,12 +322,24 @@ export const reduceAvailability = async (
   return result;
 };
 
-export const availabilityByProduct = async (
-  id: number
-) : Promise <Availability[]> => {
-  const [rows] = await pool.query<Availability[]>("SELECT * FROM availability WHERE product_id = ?", [id]);
+export const availabilityByStore = async (
+  storeId: number
+): Promise<Availability[]> => {
+  const [rows] = await pool.query<Availability[]>(
+    `SELECT 
+      id,
+      store_id,
+      DATE_FORMAT(available_date, '%Y-%m-%d') AS available_date,
+      total_capacity,
+      remaining_capacity
+    FROM availability
+    WHERE store_id = ?
+    ORDER BY available_date`,
+    [storeId]
+  );
+
   return rows;
-}
+};
 //availability=======
 
 

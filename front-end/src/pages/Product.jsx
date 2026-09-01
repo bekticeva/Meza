@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
+import Calendar from "../components/Calendar.jsx";
 
 const API_URL = "http://88.200.63.148:5000";
 
@@ -9,15 +10,30 @@ export default function Product() {
   const [product, setProduct] = useState(null);
   //leftoff
   const [availability, setAvailability] = useState([]);
+  const[selDate,setSelDate] = useState("");
 
   async function loadProduct() {
     try {
       const res = await fetch(API_URL + "/stores/products/" + id);
       const data = await res.json();
 
-      setProduct(data[0]);
+      const prodData = data[0];
+
+      setProduct(prodData);
+      loadAvailability(prodData.store_id);
     } catch (error) {
       console.log("Error loading product", error);
+    }
+  }
+
+  async function loadAvailability(storeId) {
+    try {
+      const res = await fetch(API_URL + "/stores/" + storeId + "/availability");
+      const data = await res.json();
+
+      setAvailability(data);
+    } catch (error) {
+      console.log("Error loading availabiity", error);
     }
   }
 
@@ -35,6 +51,9 @@ export default function Product() {
         </div>
       )}
 
+      <Calendar availability={availability} onDateSelect={setSelDate} />
+
+      {selDate && <p>Selected date: {selDate}</p>}
     </div>
   );
 }

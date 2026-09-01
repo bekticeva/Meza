@@ -6,7 +6,7 @@ import {  allStores,
           createProduct, 
           updateProduct, 
           deleteProduct,
-          availabilityByProduct } from "../db/database.js"
+          availabilityByStore } from "../db/database.js"
 const router = Router();
 
 
@@ -64,16 +64,19 @@ const getOneProduct = async (
   }
 };
 
-const getProductAvailability = async (
+const getStoreAvailability = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  try{
-    const availability = await availabilityByProduct(req.params.id);
-    res.json(availability);
-  } catch(error){
-    next(error)
+  try {
+    const storeId = Number(req.params.id);
+
+    const availability = await availabilityByStore(storeId);
+
+    res.status(200).json(availability);
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -227,8 +230,8 @@ const removeProduct = async (
 
 
 router.get("/", getAllStores);
-router.get("/products/:id/availability", getProductAvailability);
 router.get("/products/:id", getOneProduct);
+router.get("/:id/availability", getStoreAvailability);
 router.get("/:id", getOneStore);
 router.get("/:id/:products", getStoreProducts);
 
