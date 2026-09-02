@@ -86,6 +86,16 @@ export interface Availability extends RowDataPacket {
   remaining_capacity: number;
 }
 
+export interface Payment {
+  id: number;
+  order_id: number;
+  payment_method: "Card" | "Cash";
+  payment_status: "Pending" | "Completed" | "Failed" | "Refunded";
+  transaction_reference: string | null;
+  amount: number;
+  payment_date: Date | null;
+}
+
 // getters ====================================================================================
 
 export const allStores = async (): Promise<Store[]> => {
@@ -342,6 +352,27 @@ export const availabilityByStore = async (
 };
 //availability=======
 
+//payment=======
+export const createPayment = async (
+  connection: PoolConnection,
+  orderId: number,
+  paymentMethod: "Card" | "Cash",
+  amount: number
+): Promise<ResultSetHeader> => {
+  const [result] = await connection.query<ResultSetHeader>(
+    `INSERT INTO payment
+    (order_id, payment_method, payment_status, transaction_reference, amount, payment_date)
+    VALUES (?, ?, 'Pending', NULL, ?, NULL)`,
+    [
+      orderId,
+      paymentMethod,
+      amount
+    ]
+  );
+
+  return result;
+};
+//payment=======
 
 
 export default pool;

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction, Router } from "express";
 import {
     createOrder,
+    createPayment,
     allOrders,
     updateOrderStatus,
     addOrderItem,
@@ -26,6 +27,7 @@ const createOrderRoute = async(
     const {
         user_id,
         delivery_method,
+        payment_method,
         delivery_address,
         additional_information,
         guest_name,
@@ -35,6 +37,7 @@ const createOrderRoute = async(
     } = req.body as {
         user_id?: number | null;
         delivery_method?: string;
+        payment_method?: "Card" | "Cash";
         delivery_address?: string | null;
         additional_information?: string | null;
         guest_name?: string | null;
@@ -56,7 +59,15 @@ const createOrderRoute = async(
         });
         return;
         }
-    
+        
+    if (!payment_method) {
+        res.status(400).json({
+            success: false,
+            message: "Payment method is required."
+        });
+        return;
+    }
+
     if (!items || items.length === 0) {
         res.status(400).json(
             {
@@ -87,6 +98,14 @@ const createOrderRoute = async(
         );
     
     console.log("Order created", queryResult);
+
+    await createPayment(
+        connection,
+        queryResult.insertId,
+        payment_method,
+        totalPrice
+    );
+
 
     for (const item of items) {
     const availabilityResult = await getAvailability(

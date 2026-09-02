@@ -86,3 +86,7 @@ nav a:hover {
   height: 32px;
   gap: 20px;
 }
+
+.cart-item{
+  border: 1px solid rgb(22, 22, 22);
+}
