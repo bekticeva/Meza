@@ -78,3 +78,11 @@ nav a {
 nav a:hover {
   color: blueviolet;
 }
+
+.quantity {
+  display: flex;
+  align-items: center;
+  border: 1px solid #777;
+  height: 32px;
+  gap: 20px;
+}

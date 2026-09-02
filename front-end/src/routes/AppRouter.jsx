@@ -3,6 +3,7 @@ import Stores from "../pages/Stores.jsx"
 import Store from "../pages/Store.jsx"
 import Product from "../pages/Product.jsx"
 import MarketPlace from "../pages/MarketPlace.jsx"
+import Cart from "../pages/Cart.jsx"
 import Menu from "../components/Menu";
 
 
@@ -16,6 +17,7 @@ export default function AppRouter() {
         <Route path="/stores" element={<Stores/>} />
         <Route path="/stores/:id" element={<Store/>} />
         <Route path="/products/:id" element={<Product/>} />
+        <Route path="/cart" element={<Cart/>} />
       </Routes>
     </BrowserRouter>
   );
